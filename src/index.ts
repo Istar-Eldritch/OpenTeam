@@ -12,7 +12,7 @@ let clientId = get<string>('client_id');
 let clientSecret = get<string>('client_secret');
 let organization = get<string>('organization');
 let teamName = get<string>('team');
-let finalRedirection = get<string>("final_redirection");
+let finalRedirection = get<string>('final_redirection');
 
 let base = 'https://github.com';
 let api = 'http://api.github.com';
@@ -136,7 +136,7 @@ server.on('request', function(req, res) {
     if (params[0] === 'code') {
       work(params[1]).then(response => {
         res.writeHead(302, {
-          Location: finalRedirection || `http://github.com/${organization}`
+          Location: finalRedirection || `https://github.com/orgs/${organization}/invitation`
         });
         res.end();
       }).catch(problems => {
