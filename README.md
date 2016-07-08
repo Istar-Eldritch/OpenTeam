@@ -27,3 +27,4 @@ You can configure the server using the default config file located in `config/de
 - **GITHUB_CLIENT_SECRET** (required)
 - **GITHUB_ORG** (required) The github organization name.
 - **GITHUB_TEAM** (required) The github team within the organization.
+- **FINAL_REDIRECTION** Where do you want to send the user after the process finish? Defaults to the github organization page.

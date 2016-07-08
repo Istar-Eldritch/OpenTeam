@@ -5,5 +5,6 @@
   "client_id": "GITHUB_CLIENT_ID",
   "client_secret": "GITHUB_CLIENT_SECRET",
   "organization": "GITHUB_ORG",
-  "team": "GITHUB_TEAM"
+  "team": "GITHUB_TEAM",
+  "final_redirection": "FINAL_REDIRECTION"
 }
