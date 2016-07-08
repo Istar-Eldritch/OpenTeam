@@ -1,0 +1,9 @@
+{
+  "host": "HOST",
+  "port": "PORT",
+  "admin_token": "GITHUB_ADMIN_TOKEN",
+  "client_id": "GITHUB_CLIENT_ID",
+  "client_secret": "GITHUB_CLIENT_SECRET",
+  "organization": "GITHUB_ORG",
+  "team": "GITHUB_TEAM"
+}

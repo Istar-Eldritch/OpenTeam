@@ -1,0 +1,21 @@
+{
+  "name": "OpenTeam",
+  "version": "1.0.0",
+  "description": "Github autoinvitation server",
+  "main": "dist/index.js",
+  "scripts": {
+    "setup": "",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm install && typings install && tsc --outDir dist && node dist"
+  },
+  "author": "Istar Eldritch",
+  "license": "GPLv3",
+  "devDependencies": {
+    "typescript": "^1.8.10",
+    "typings": "^1.3.1"
+  },
+  "dependencies": {
+    "config": "^1.21.0",
+    "node-fetch": "^1.5.3"
+  }
+}
