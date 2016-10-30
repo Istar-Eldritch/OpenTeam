@@ -47,7 +47,7 @@ async function getTeamId() {
 
   if (teamRequest.ok) {
     let match = payload.filter((team) => {
-      return team.name === teamName;
+      return team.slug === teamName;
     });
 
     if (match.length === 1) {

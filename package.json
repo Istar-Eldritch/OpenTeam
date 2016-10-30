@@ -4,9 +4,9 @@
   "description": "Github autoinvitation server",
   "main": "dist/index.js",
   "scripts": {
-    "setup": "",
+    "setup": "npm i && typings i && rm -fr dist && tsc --outDir dist",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm install && typings install && tsc --outDir dist && node dist"
+    "start": "node dist"
   },
   "author": "Istar Eldritch",
   "license": "GPLv3",
