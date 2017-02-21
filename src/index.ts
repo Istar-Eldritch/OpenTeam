@@ -5,107 +5,100 @@ const fetch = require('node-fetch');
 
 const server = http.createServer();
 
-let port = get<number>('port');
-let redirect = `${get<string>('host')}:${port}`;
-let adminOrgToken = get<string>('admin_token');
-let clientId = get<string>('client_id');
-let clientSecret = get<string>('client_secret');
-let organization = get<string>('organization');
-let teamName = get<string>('team');
-let finalRedirection = get<string>('final_redirection');
+const port = get<number>('port');
+const redirect = `${get<string>('host')}:${port}`;
+const adminOrgToken = get<string>('admin_token');
+const clientId = get<string>('client_id');
+const clientSecret = get<string>('client_secret');
+const organization = get<string>('organization');
+const teamName = get<string>('team');
+const finalRedirection = get<string>('final_redirection');
 
-let base = 'https://github.com';
-let api = 'http://api.github.com';
-let authUrl = `${base}/login/oauth/authorize?redirect_url=${redirect}&client_id=${clientId}&scope=user:email`;
-let accessTokenUrl = `${base}/login/oauth/access_token?client_id=${clientId}&client_secret=${clientSecret}&code=:code`;
-let teamsUrl = `${api}/orgs/${organization}/teams`;
-let membershipUrl = `${api}/teams/:team/memberships/:username`;
+const base = 'https://github.com';
+const api = 'http://api.github.com';
+const authUrl = `${base}/login/oauth/authorize?redirect_url=${redirect}&client_id=${clientId}&scope=user:email`;
+const accessTokenUrl = `${base}/login/oauth/access_token?client_id=${clientId}&client_secret=${clientSecret}&code=:code`;
+const teamsUrl = `${api}/orgs/${organization}/teams`;
+const membershipUrl = `${api}/teams/:team/memberships/:username`;
 
-let defaultHeaders = new fetch.Headers();
+function getHeaders(token?: string): {[k: string]: string} {
+  return {
+    'Accept': 'application/json',
+    'Authorization': `Token %{token}`
+  };
+}
 
-defaultHeaders.set('Accept', 'application/json');
-
-function getHeaders(token?: string) {
-  let headers = new fetch.Headers();
-  headers.set('Accept', 'application/json');
-  if (token) {
-    headers.set('Authorization', `Token ${token}`);
+async function rejectError(req) {
+  const payload = req.json();
+  if (req.ok) {
+    return payload;
   }
-
-  return headers;
+  else {
+    return Promise.reject(payload);
+  }
 }
 
 async function getTeamId() {
-  let teamRequest = await fetch(
+  return await fetch(
     teamsUrl,
     {
       headers: getHeaders(adminOrgToken)
     }
-  );
-
-  let payload = await teamRequest.json();
-
-  if (teamRequest.ok) {
-    let match = payload.filter((team) => {
-      return team.slug === teamName;
-    });
+  )
+  .then(rejectError)
+  .then(payload => {
+    const match = payload.filter(team => team.slug === teamName);
 
     if (match.length === 1) {
       return match[0].id;
     }
-  }
-
-  await Promise.reject(payload);
+    else {
+      return Promise.reject(payload);
+    }
+  });
 }
 
-async function grantPermissions(token: string, team: string, username: string): Promise<string> {
-  let url = membershipUrl.replace(':team', team).replace(':username', username);
-  let permissionRequest = await fetch(
+function grantPermissions(token: string, team: string, username: string): Promise<string> {
+  const url = membershipUrl.replace(':team', team).replace(':username', username);
+  return fetch(
     url,
     {
       method: 'PUT',
       headers: getHeaders(adminOrgToken)
     }
-  );
-
-  let payload = await permissionRequest.json();
-
-  if (permissionRequest.ok) {
-    return payload.url;
-  }
-  else {
-    await Promise.reject(payload);
-  }
+  )
+  .then(rejectError)
+  .then(p => p.url);
 }
 
 async function getUsername(token: string): Promise<string> {
 
-  let profileRequest = await fetch(
+  const profileRequest = await fetch(
     api + '/user',
     {
       headers: getHeaders(token)
     }
   );
 
-  let payload = await profileRequest.json();
+  const payload = await profileRequest.json();
   if (profileRequest.ok) {
     return payload.login;
   }
   else {
-    await Promise.reject(payload);
+    return Promise.reject(payload);
   }
 
 }
 
 async function getToken(code: string): Promise<string> {
-  let tokenRequest = await fetch(
+  const tokenRequest = await fetch(
     accessTokenUrl.replace(':code', code),
     {
       headers: getHeaders()
     }
   );
 
-  let payload = await tokenRequest.json();
+  const payload = await tokenRequest.json();
 
   if (tokenRequest.ok) {
     return payload.access_token;
@@ -117,22 +110,21 @@ async function getToken(code: string): Promise<string> {
 
 async function work(code: string): Promise<string> {
 
-  let teamId = await getTeamId();
+  const teamId = await getTeamId();
 
-  let token = await getToken(code);
+  const token = await getToken(code);
 
-  let username = await getUsername(token);
+  const username = await getUsername(token);
 
-  let url = await grantPermissions(token, teamId, username);
+  return grantPermissions(token, teamId, username);
 
-  return url;
 }
 
 server.on('request', function(req, res) {
-  let url = req.url.split('?');
+  const url = req.url.split('?');
 
   if (url.length > 1) {
-    let params = url[1].split('=');
+    const params = url[1].split('=');
     if (params[0] === 'code') {
       work(params[1]).then(response => {
         res.writeHead(302, {

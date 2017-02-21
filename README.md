@@ -12,15 +12,18 @@ This node server will grant permissions to any user to the team it is configured
 Running It
 ------
 ```
+$ npm run setup
 $ npm start
 ```
+
+Alternatively you can use the [`istareldritch/openteam`](https://hub.docker.com/r/istareldritch/openteam/) docker image.
 
 Configuration
 ------
 
 You can configure the server using the default config file located in `config/default.json` following the same structure of `config/custom-environment-variables.json` or using the following environment variables:
 
-- **HOST** (required)
+- **HOST** (required) Github will redirect the user to the host this service is running on. You need to provide the external ip or domain of the host.
 - **PORT** (defaults to 3000)
 - **GITHUB_ADMIN_TOKEN** (required) This should be a token created by one of the owners of the organization with the `admin:org` scope.
 - **GITHUB_CLIENT_ID** (required)
