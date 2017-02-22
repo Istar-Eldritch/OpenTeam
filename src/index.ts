@@ -21,10 +21,10 @@ const accessTokenUrl = `${base}/login/oauth/access_token?client_id=${clientId}&c
 const teamsUrl = `${api}/orgs/${organization}/teams`;
 const membershipUrl = `${api}/teams/:team/memberships/:username`;
 
-function getHeaders(token?: string): {[k: string]: string} {
+function getHeaders(token?: string): {[k: string]: string[]} {
   return {
-    'Accept': 'application/json',
-    'Authorization': `Token %{token}`
+    'Accept': ['application/json'],
+    'Authorization': [`Token ${token || adminOrgToken}`]
   };
 }
 
@@ -71,51 +71,35 @@ function grantPermissions(token: string, team: string, username: string): Promis
   .then(p => p.url);
 }
 
-async function getUsername(token: string): Promise<string> {
+function getUsername(token: string): Promise<string> {
 
-  const profileRequest = await fetch(
+  return fetch(
     api + '/user',
     {
       headers: getHeaders(token)
     }
-  );
-
-  const payload = await profileRequest.json();
-  if (profileRequest.ok) {
-    return payload.login;
-  }
-  else {
-    return Promise.reject(payload);
-  }
+  )
+  .then(rejectError)
+  .then(p => p.login);
 
 }
 
-async function getToken(code: string): Promise<string> {
-  const tokenRequest = await fetch(
+function getToken(code: string): Promise<string> {
+  return fetch(
     accessTokenUrl.replace(':code', code),
     {
       headers: getHeaders()
     }
-  );
-
-  const payload = await tokenRequest.json();
-
-  if (tokenRequest.ok) {
-    return payload.access_token;
-  }
-  else {
-    await Promise.reject(payload);
-  }
+  )
+  .then(rejectError)
+  .then(t => t.access_token);
 }
 
 async function work(code: string): Promise<string> {
 
   const teamId = await getTeamId();
-
   const token = await getToken(code);
-
   const username = await getUsername(token);
-
   return grantPermissions(token, teamId, username);
 
 }
@@ -128,7 +112,7 @@ server.on('request', function(req, res) {
     if (params[0] === 'code') {
       work(params[1]).then(response => {
         res.writeHead(302, {
-          Location: finalRedirection || `https://github.com/orgs/${organization}/invitation`
+          Location: finalRedirection || `${base}/orgs/${organization}/invitation`
         });
         res.end();
       }).catch(problems => {
